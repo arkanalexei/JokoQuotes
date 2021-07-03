@@ -30,7 +30,7 @@ async def on_message(message):
 
 
 keep_alive()
-client.run('ODU0NTg3NTEwNTI3ODg1MzEy.YMmGow.KbBwID57Mhd2TSDKwIAPjkS8uGw')
+client.run('PASTE YOUR TOKEN HERE')
 
 
 
