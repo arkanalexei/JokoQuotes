@@ -5,13 +5,17 @@ from PIL import Image
 from io import BytesIO
 from keep_alive import keep_alive
 from discord.ext import commands
+from prsaw import RandomStuffV2
 
 client = commands.Bot(command_prefix='.')
+client.remove_command('help')
+
+rs = RandomStuffV2(async_mode=True)
 
 kutipan_jokowi = open('jokoquotes.txt','r').readlines()
 kutipan_merdeka = open('merdekaquotes.txt','r').readlines()
 
-reddit = asyncpraw.Reddit(client_id="QlGKgj6_Yjcvp3YJV1JQUQ",
+redit = asyncpraw.Reddit(client_id="QlGKgj6_Yjcvp3YJV1JQUQ",
                      client_secret="Xw88BD_g0tdpkr1HDpbrWSpL23D7QA",
                      username="KopiABC",
                      password="ayolahkamu19",
@@ -40,7 +44,6 @@ async def server(ctx):
 
     embed = discord.Embed(
         title=name + " Server Information",
-        description=description,
         color=discord.Color.blue()
     )
     embed.set_thumbnail(url=icon)
@@ -105,27 +108,33 @@ async def stop(ctx):
 
     await ctx.voice_client.disconnect()
 
-@client.command(pass_context=True)
-async def wanted(ctx, user: discord.Member = None):
-    """You will become wanted"""
+@client.command()
+async def okk(ctx, user: discord.Member = None):
+    """Twibbon OKK"""
     if user == None:
         user = ctx.author
-    wanted = Image.open("wanted.jpg")
 
-    asset = ctx.author.avatar_url_as(size=128)
+    print(ctx.message.attachments)
+
+    if ctx.message.attachments != []:
+        asset = ctx.message.attachments[0]
+    else:
+        asset = ctx.author.avatar_url_as()
+
+    foreground = Image.open("Twibbon3.png")
+
+
     data = BytesIO(await asset.read())
-    pfp = Image.open(data)
-
-    pfp = pfp.resize((306,304))
-    wanted.paste(pfp, (70,140))
-    wanted.save("profile.jpg")
-
+    background = Image.open(data)
+    background = background.resize((1080,1080))
+    background.paste(foreground, (0,0), foreground.convert('RGBA'))
+    background.save("profile.jpg")
     await ctx.send(file = discord.File("profile.jpg"))
 
 @client.command(pass_context=True)
-async def redit(ctx, sub = "meme"):
+async def reddit(ctx, sub = "meme"):
     "Use .redit [sub] to specify a sub. Default is meme"
-    subreddit = await reddit.subreddit(sub)
+    subreddit = await redit.subreddit(sub)
     all_subs = []
 
     post = subreddit.top("month", limit=50)
@@ -143,5 +152,35 @@ async def redit(ctx, sub = "meme"):
 
     await ctx.send(embed = em)
 
+@client.command()
+async def help(ctx):
+    author = ctx.message.author
+
+    embed = discord.Embed(
+        title="List of commands",
+        color=discord.Color.blue()
+    )
+    embed.add_field(name=".help", value="Need help?", inline=False)
+    embed.add_field(name=".jokowi", value="Quotes from the man himself", inline=False)
+    embed.add_field(name=".merdeka", value="Quotes from national heroes", inline=False)
+    embed.add_field(name=".ping", value="Pings", inline=False)
+    embed.add_field(name=".8ball", value="8Ball game", inline=False)
+    embed.add_field(name=".join", value="Joins a voice channel", inline=False)
+    embed.add_field(name=".stop", value="Stops and disconnects the bot from voice", inline=False)
+    embed.add_field(name=".okk", value="Twibbon OKK", inline=False)
+    embed.add_field(name=".reddit", value="Use .redit [sub] to specify a sub. Default is meme", inline=False)
+    embed.add_field(name=".t", value="You ever feel lonely? Well, talk to an AI!", inline=False)
+
+    await ctx.send(embed=embed)
+
+@client.command()
+async def t(ctx, *, msg):
+    response = await rs.get_ai_response(msg)
+    await ctx.send(response)
+
+
 keep_alive()
 client.run('TOKEN')
+
+
+
